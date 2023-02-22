@@ -14,22 +14,21 @@ UnloadDriver(
 	KdPrint(("print-registry-path driver unloaded\n"));
 }
 
-
-
 NTSTATUS
 CopyRegistryPathBuffer(
+	_In_ PUNICODE_STRING dest_registry_path,
 	_In_ PUNICODE_STRING orig_registry_path
 )
 {
-	g_registry_path.Buffer = (PWCH)ExAllocatePool2(POOL_FLAG_PAGED, orig_registry_path->Length, DTAG);
+	dest_registry_path->Buffer = (PWCH)ExAllocatePool2(POOL_FLAG_PAGED, orig_registry_path->Length, DTAG);
 	KdPrint(("Allocated %d buffer bytes", orig_registry_path->Length));
-	if (g_registry_path.Buffer == nullptr)
+	if (dest_registry_path->Buffer == nullptr)
 	{
 		KdPrint(("Failed to allocate memory\n"));
 		return STATUS_INSUFFICIENT_RESOURCES;
 	}
-	g_registry_path.MaximumLength = orig_registry_path->Length;
-	RtlCopyUnicodeString(&g_registry_path, orig_registry_path);
+	dest_registry_path->MaximumLength = orig_registry_path->Length;
+	RtlCopyUnicodeString(dest_registry_path, orig_registry_path);
 	return STATUS_SUCCESS;
 }
 
@@ -42,7 +41,7 @@ DriverEntry(
 {
 	KdPrint(("print-registry-path driver loaded\n"));
 	driver_object->DriverUnload = UnloadDriver;
-	NTSTATUS status = CopyRegistryPathBuffer(registry_path);
+	NTSTATUS status = CopyRegistryPathBuffer(&g_registry_path, registry_path);
 	if (!NT_SUCCESS(status))
 	{
 		return status;
