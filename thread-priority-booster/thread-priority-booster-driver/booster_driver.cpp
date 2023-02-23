@@ -1,5 +1,6 @@
-#include "booster_common.h"
 #include <ntifs.h>
+#include "booster_common.h"
+#include "logging.h"
 
 void
 UnloadDriver(
@@ -28,7 +29,7 @@ DriverEntry(
 {
 	UNREFERENCED_PARAMETER(registry_path);
 
-	KdPrint(("thread-priority-booster driver loaded\n"));
+	Log<LogLevel::Debug>("%s\n", "thread-priority-booster driver loaded");
 	UNICODE_STRING dev_name = RTL_CONSTANT_STRING(L"\\Device\\Booster");
 	PDEVICE_OBJECT device_object;
 	NTSTATUS status = IoCreateDevice(
@@ -43,7 +44,7 @@ DriverEntry(
 
 	if (!NT_SUCCESS(status))
 	{
-		KdPrint(("failed to create device object (0x%08x)\n", status));
+		Log<LogLevel::Error>("failed to create device object (0x%08x)\n", status);
 		return status;
 	}
 
@@ -52,7 +53,7 @@ DriverEntry(
 
 	if (!NT_SUCCESS(status))
 	{
-		KdPrint(("failed to create symlink (0x%08x)\n", status));
+		Log<LogLevel::Error>("failed to create symlink (0x%08x)\n", status);
 		IoDeleteDevice(device_object);
 		return status;
 	}
@@ -72,7 +73,7 @@ UnloadDriver(
 	UNICODE_STRING sym_link = RTL_CONSTANT_STRING(L"\\??\\Booster");
 	IoDeleteSymbolicLink(&sym_link);
 	IoDeleteDevice(driver_object->DeviceObject);
-	KdPrint(("thread-priority-booster driver unloaded\n"));
+	Log<LogLevel::Debug>("thread-priority-booster driver unloaded\n");
 }
 
 NTSTATUS
@@ -119,7 +120,7 @@ Write(
 			break;
 		
 		KPRIORITY old_prio = KeSetPriorityThread(thread, data->priority);
-		KdPrint(("Priority change for thread %u from %d to %d succeeded!\n", data->tid, old_prio, data->priority));
+		Log<LogLevel::Debug>("Priority change for thread %u from %d to %d succeeded!\n", data->tid, old_prio, data->priority);
 
 		ObDereferenceObject(thread);
 		used_bytes = sizeof(data);
