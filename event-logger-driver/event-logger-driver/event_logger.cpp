@@ -17,12 +17,11 @@ HighMemoryConditionRoutine(
 	if (!NT_SUCCESS(status))
 	{
 		KdPrint(("[-] Expected NT_SUCCESS but KeWaitForSingleObject returned 0x%d\n", status));
+		return;
 	}
-	else
-	{
-		KdPrint(("[+] HighMemoryCondition event signaled!\n"));
-	}
-	KdPrint(("[+] HighMemoryConditionRoutine thread finished\n"));
+	
+	KdPrint(("[+] HighMemoryCondition event signaled!\n"));
+	KdPrint(("[+] HighMemoryConditionRoutine thread finished successfuly\n"));
 }
 
 void
