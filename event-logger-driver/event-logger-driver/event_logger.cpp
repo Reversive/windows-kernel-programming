@@ -44,14 +44,14 @@ DriverEntry(
 	driver_object->DriverUnload = UnloadEventLogger;
 	UNICODE_STRING highmem_condition_name;
 	RtlInitUnicodeString(&highmem_condition_name, L"\\KernelObjects\\HighMemoryCondition");
-	HANDLE highmem_event_hwnd;
-	PKEVENT hm_eobj = IoCreateNotificationEvent(&highmem_condition_name, &highmem_event_hwnd);
+	HANDLE highmem_event_handle;
+	PKEVENT hm_eobj = IoCreateNotificationEvent(&highmem_condition_name, &highmem_event_handle);
 	KdPrint(("[+] HighMemoryCondition notification event created!\n"));
 
-	HANDLE highmem_thread_hwnd;
+	HANDLE highmem_thread_handle;
 	NTSTATUS status = IoCreateSystemThread(
 		driver_object, 
-		&highmem_thread_hwnd, 
+		&highmem_thread_handle, 
 		THREAD_ALL_ACCESS, 
 		nullptr, 
 		NtCurrentProcess(), 
@@ -62,10 +62,10 @@ DriverEntry(
 	if (!NT_SUCCESS(status))
 	{
 		KdPrint(("[-] Failed initializing HighMemoryCondition thread routine\n"));
-		ZwClose(highmem_thread_hwnd);
+		ZwClose(highmem_thread_handle);
 		return status;
 	}
 
-	ZwClose(highmem_thread_hwnd);
+	ZwClose(highmem_thread_handle);
 	return STATUS_SUCCESS;
 }
