@@ -15,22 +15,24 @@ private:
 
 struct SpinLock
 {
-	explicit SpinLock(PKSPIN_LOCK slock, PKIRQL old_irql) : _slock(slock), _old_irql(old_irql) { }
+	void Init()
+	{
+		KeInitializeSpinLock(&_slock);
+	}
 
 	void Lock()
 	{
-		KdPrint(("[+] Acquiring spinlock, current irql is %d\n", KeGetCurrentIrql()));
-		KeAcquireSpinLock(_slock, _old_irql);
-		
+		KeAcquireSpinLock(&_slock, &_old_irql);
+		KdPrint(("[+] Acquiring spinlock, original irql is %d\n", _old_irql));
 	}
 
 	void Unlock()
 	{
-		KeReleaseSpinLock(_slock, *_old_irql);
-		KdPrint(("[+] Released spin lock, irql set back to %d\n", *_old_irql));
+		KeReleaseSpinLock(&_slock, _old_irql);
+		KdPrint(("[+] Released spin lock, irql set back to %d\n", _old_irql));
 	}
 
 private:
-	PKSPIN_LOCK _slock;
-	PKIRQL _old_irql;
+	KSPIN_LOCK _slock;
+	KIRQL _old_irql;
 };
